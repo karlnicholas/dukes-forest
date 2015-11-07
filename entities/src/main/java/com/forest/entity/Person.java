@@ -35,7 +35,7 @@ public class Person implements Serializable {
     @JoinTable(name = "PERSON_GROUPS", joinColumns = {
         @JoinColumn(name = "EMAIL", referencedColumnName = "EMAIL")}, inverseJoinColumns = {
         @JoinColumn(name = "GROUPS_ID", referencedColumnName = "ID")})
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER )
     protected List<Groups> groupsList;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

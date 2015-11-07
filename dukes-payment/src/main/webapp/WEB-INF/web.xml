@@ -19,7 +19,6 @@
     </security-constraint>
     <login-config>
         <auth-method>BASIC</auth-method>
-        <realm-name>jdbcRealm</realm-name>
     </login-config>
     <security-role>
         <role-name>USERS</role-name>

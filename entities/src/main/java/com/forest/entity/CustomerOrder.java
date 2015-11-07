@@ -15,6 +15,8 @@ import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  *
  * @author markito
@@ -59,7 +61,7 @@ public class CustomerOrder implements Serializable {
     @ManyToOne(optional = false)
     private Customer customer;
     
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "customerOrder")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "customerOrder", fetch=FetchType.EAGER)
     private List<OrderDetail> orderDetailList;
 
     public CustomerOrder() {
@@ -115,6 +117,7 @@ public class CustomerOrder implements Serializable {
         this.customer = customer;
     }
 
+    @JsonIgnore
     public void setCustomer(Person person) {
         this.customer = (Customer) person;
     }

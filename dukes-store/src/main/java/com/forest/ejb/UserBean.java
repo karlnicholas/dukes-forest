@@ -8,6 +8,7 @@
 package com.forest.ejb;
 
 import com.forest.entity.Customer;
+import com.forest.entity.Groups;
 import com.forest.entity.Person;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -39,8 +40,15 @@ public class UserBean extends AbstractFacade<Customer> {
 
         // check if user exists
         if (getUserByEmail(customer.getEmail()) == null) {
-            super.create(customer);
-            return true;
+            Query createNamedQuery = getEntityManager().createNamedQuery("Groups.findByName");
+            createNamedQuery.setParameter("name", "USERS");
+            if (createNamedQuery.getResultList().size() > 0) {
+                customer.getGroupsList().add( (Groups)createNamedQuery.getSingleResult());
+                super.create(customer);
+                    return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }

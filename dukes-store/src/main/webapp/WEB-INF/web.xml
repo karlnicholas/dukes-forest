@@ -46,7 +46,6 @@
     </welcome-file-list>
     <login-config>
         <auth-method>FORM</auth-method>
-        <realm-name>jdbcRealm</realm-name>
         <form-login-config>
             <form-login-page>/login.xhtml</form-login-page>
             <form-error-page>/login.xhtml</form-error-page>
@@ -62,18 +61,9 @@
             <role-name>ADMINS</role-name>
         </auth-constraint>
     </security-constraint> 
-    
-    <data-source>
-        <name>java:global/ForestDataSource</name>
-        <class-name>org.apache.derby.jdbc.ClientDataSource</class-name>
-        <server-name>localhost</server-name>
-        <port-number>1527</port-number>
-        <database-name>forest</database-name>
-        <user>forest</user>
-        <password>app</password>
-        <property>
-            <name>connectionAttributes</name>
-            <value>;create=true</value>
-        </property>
-    </data-source>
+	<!--Defining security role -->
+	<security-role>
+		<role-name>ADMINS</role-name>
+	</security-role>
+	<!--Defining security role -->
 </web-app>

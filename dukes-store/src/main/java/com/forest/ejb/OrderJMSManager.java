@@ -22,7 +22,7 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 
 @JMSDestinationDefinition(
-        name = "java:global/jms/OrderQueue",
+        name = "java:jboss/jms/queue/OrderQueue",
         interfaceName = "javax.jms.Queue",
         destinationName = "PhysicalOrderQueue")
 @Stateless
@@ -32,7 +32,7 @@ public class OrderJMSManager {
     @Inject
     private JMSContext context;
     
-    @Resource(mappedName = "java:global/jms/OrderQueue")
+    @Resource(mappedName = "java:global/jms/queue/OrderQueue")
     private Queue queue;
     private QueueBrowser browser;
 

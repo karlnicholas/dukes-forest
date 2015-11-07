@@ -104,7 +104,7 @@ public class PaymentHandler implements IOrderHandler, Serializable {
             try {
                 requestContext.getHeaders().add(
                         "Authorization",
-                        "BASIC " + DatatypeConverter.printBase64Binary(
+                        "Basic " + DatatypeConverter.printBase64Binary(
                                    (user+":"+password).getBytes("UTF-8"))
                 );
             } catch (UnsupportedEncodingException ex) { }

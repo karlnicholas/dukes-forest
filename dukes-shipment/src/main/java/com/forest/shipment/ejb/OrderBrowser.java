@@ -29,7 +29,7 @@ public class OrderBrowser {
     private static final Logger logger = Logger.getLogger(OrderBrowser.class.getCanonicalName());
     @Inject
     private JMSContext context;
-    @Resource(mappedName = "java:global/jms/OrderQueue")
+    @Resource(mappedName = "java:global/jms/queue/OrderQueue")
     private Queue queue;
     private QueueBrowser browser;
 
