@@ -156,6 +156,7 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
 * Commented out the "data-source" from web.xml for dukes-store project.
 
 * Changed com.forest.handlers.PaymentHandler to use "Basic " instead of "BASIC " for the "Authorization" header.
+  See WildFly issue [HTTP Authentication Basic header is case sensitive](http://issues.jboss.org/browse/WFLY-5618).
 
 * Added @JsonIgnore to com.forest.entity.CustomerOrder.setCustomer(Person person) because it was a duplicate 
   signature with CustomerOrder.setCustomer(Order order) and causing problems with JSON serialization. 
