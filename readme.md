@@ -178,9 +178,9 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
         if (createNamedQuery.getResultList().size() > 0) {
             customer.getGroupsList().add( (Groups)createNamedQuery.getSingleResult());
             super.create(customer);
-                return true;
-            } else {
-                return false;
-            }
+            return true;
+        } else {
+            return false;
+        }
   
   
