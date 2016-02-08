@@ -8,6 +8,10 @@ Please find the Oracle dukes-forest tutorial documentation at [Duke's Forest Cas
 
 # dukes-forest
 
+# todo: installation and running proceedures
+
+# notes of porting to Wildfly.
+
 Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
 
 * Date: 10/2015
@@ -26,9 +30,31 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
 * Changed entities/src/main/resources/META-INF/persistence.xml to use java:jboss/ForestDataSource instead of
   java:global/ForestDataSource. Created the appropriate datasource in Wildfly.
   
-* Changed dukes-shipment/src/main/java/com.forest.shipment.ejb.OrderBrowser to use jboss compatible jndi name 
-  for jms message queue. Created appropriate queue in Wildfly and made Eclipse run Wildfly with standalone-full.xml
+    <datasource jta="true" jndi-name="java:jboss/ForestDataSource" pool-name="ForestDataSource" enabled="true" use-ccm="true">
+        <connection-url>jdbc:mysql://localhost:3306/forest</connection-url>
+        <driver-class>com.mysql.jdbc.Driver</driver-class>
+        <driver>mysql</driver>
+        <security>
+        <user-name>username</user-name>
+        <password>password</password>
+        </security>
+        <validation>
+        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"/>
+        <background-validation>true</background-validation>
+        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"/>
+        </validation>
+    </datasource>
+    
+* Created appropriate queue in Wildfly and made Eclipse run Wildfly with standalone-full.xml
   so that JMS services would be available.
+  
+    <jms-queue name="OrderQueue">
+        <entry name="java:global/jms/queue/OrderQueue"/>
+        <durable>true</durable>
+    </jms-queue>
+
+* Changed dukes-shipment/src/main/java/com.forest.shipment.ejb.OrderBrowser to use jboss compatible jndi name 
+  for jms message queue. 
   
         @Resource(mappedName = "java:global/jms/queue/OrderQueue")
         
