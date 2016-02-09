@@ -8,17 +8,28 @@ Please find the Oracle dukes-forest tutorial documentation at [Duke's Forest Cas
 
 # dukes-forest tutorial example.
 
+This document is divided into **Installation and running** and **Notes on changes to the original source**
+
 # Installation and running procedures.
 
 * Date 02/2106
 
 * Clone git repository.
 
-* Run `mvn clean verify` from the dukes-forest directory. This will build 3 jar files and 3 war files, `events.jar`, `entities.jar`, `dukes-resources.jar`, and `dukes-payment.war`, `dukes-shipment.war`, and `dukes-store.war`, in that order.
+### Database procedures.
 
 * Create a schema in MySQL named `forest` in lowercase. I used the workbench.
 
 * Create the database user and password in your `MySQL` server. Give this user full privileges to the `forest` schema. This username and password will need to be added to your `Forest` datasource.
+
+* Create the schema. There is an issue with having JPA auto create the schema and load the data. It works, but it works for both dukes-shipment and dukes-store. The create sql script won't create the database twice, but the load sql script will load twice, so let's just do it by hand because I have commented out the create and load properties in the entities persistence.xml file. The create.sql script is in entities/src/main/resources/META-INF/sql/create.sql.
+
+* Load the default data. The load.sql script is in entities/src/main/resources/META-INF/sql/load.sql.
+
+### Wildfly procedures.
+
+* Run `mvn clean verify` from the dukes-forest directory. This will build 3 jar files and 3 war files, `events.jar`, `entities.jar`, `dukes-resources.jar`, and `dukes-payment.war`, `dukes-shipment.war`, and `dukes-store.war`, in that order.
+
 
 * Pick a Wildfly configuration file to work with: **Be sure you are running the `standalone-full` version.**, or at least you have enabled JMS messaging ( I used the standalone-full.xml, I don't know the exact configuration needed, but standalone-full.xml worked).
 
@@ -33,34 +44,36 @@ Please find the Oracle dukes-forest tutorial documentation at [Duke's Forest Cas
         <durable>true</durable>
     </jms-queue>
 
-* Add a security-domain to wildfly named dukes-forest, as per specs below.
+* Add a security-domain to wildfly named dukes-forest, as per specs below. Note that on unix systems the queries are case sensitive.
 
         <security-domain name="dukes-forest" cache-type="default">
             <authentication>
                 <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
                     <module-option name="dsJndiName" value="java:jboss/ForestDataSource"/>
-                    <module-option name="rolesQuery" value="select name as 'roles', 'roles' as 'rolegroup' from forest.groups g inner join forest.person_groups pg on g.id = pg.groups_id join forest.person p on p.email = pg.email where p.email = ?"/>
+                    <module-option name="rolesQuery" value="select NAME as 'ROLES', 'Roles' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?"/>
                     <module-option name="hashAlgorithm" value="MD5"/>
                     <module-option name="hashEncoding" value="HEX"/>
-                    <module-option name="principalsQuery" value="select password from forest.person where email=?"/>
+                    <module-option name="principalsQuery" value="select PASSWORD from forest.PERSON where EMAIL=?"/>
                 </login-module>
             </authentication>
             <authorization>
                 <policy-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
                     <module-option name="dsJndiName" value="java:jboss/ForestDataSource"/>
-                    <module-option name="rolesQuery" value="select name as 'role', 'roles' as 'rolegroup' from forest.groups g inner join forest.person_groups pg on g.id = pg.groups_id join forest.person p on p.email = pg.email where p.email = ?"/>
+                    <module-option name="rolesQuery" value="select NAME as 'ROLE', 'ROLES' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?"/>
                     <module-option name="hashAlgorithm" value="MD5"/>
                     <module-option name="hashEncoding" value="HEX"/>
-                    <module-option name="principalsQuery" value="select password from forest.person where email=?"/>
+                    <module-option name="principalsQuery" value="select PASSWORD from forest.PERSON where EMAIL=?"/>
                 </policy-module>
             </authorization>
         </security-domain>
   
 * Deploy dukes-payment, dukes-shipment, and dukes-store to wildfly.
-  ** Issue here ** Figuring out work around. See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). 
+  ** Issue here ** Figuring out work around. See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). The issue doesn't apply because you have already created the schema and loaded the data by hand as per the database procedures above. 
 
   
-* Open http://localhost:8080/dukes-store to run dukes-store. The built-in administrator account, which you will need it you login to dukes-shipment, is user:admin password: 1234.
+* Open http://localhost:8080/dukes-store to run dukes-store. You will need the built-in administrator account to login to dukes-shipment, which is username=admin@example.com and password=1234.
+
+* Refer to the [Duke's Forest Case Study Example](https://docs.oracle.com/javaee/7/tutorial/dukes-forest.htm#GLNPW) tutorial for further information on using the example.
 
 
 # notes of porting to Wildfly 9.
@@ -132,19 +145,19 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
             <authentication>
                 <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
                     <module-option name="dsJndiName" value="java:jboss/ForestDataSource"/>
-                    <module-option name="rolesQuery" value="select name as 'roles', 'roles' as 'rolegroup' from forest.groups g inner join forest.person_groups pg on g.id = pg.groups_id join forest.person p on p.email = pg.email where p.email = ?"/>
+                    <module-option name="rolesQuery" value="select NAME as 'ROLES', 'Roles' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?"/>
                     <module-option name="hashAlgorithm" value="MD5"/>
                     <module-option name="hashEncoding" value="HEX"/>
-                    <module-option name="principalsQuery" value="select password from forest.person where email=?"/>
+                    <module-option name="principalsQuery" value="select PASSWORD from forest.PERSON where EMAIL=?"/>
                 </login-module>
             </authentication>
             <authorization>
                 <policy-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
                     <module-option name="dsJndiName" value="java:jboss/ForestDataSource"/>
-                    <module-option name="rolesQuery" value="select name as 'role', 'roles' as 'rolegroup' from forest.groups g inner join forest.person_groups pg on g.id = pg.groups_id join forest.person p on p.email = pg.email where p.email = ?"/>
+                    <module-option name="rolesQuery" value="select NAME as 'ROLE', 'ROLES' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?"/>
                     <module-option name="hashAlgorithm" value="MD5"/>
                     <module-option name="hashEncoding" value="HEX"/>
-                    <module-option name="principalsQuery" value="select password from forest.person where email=?"/>
+                    <module-option name="principalsQuery" value="select PASSWORD from forest.PERSON where EMAIL=?"/>
                 </policy-module>
             </authorization>
         </security-domain>
@@ -263,4 +276,4 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
             return false;
         }
   
-  
+* Issues about upper/lower case table and field names in MySQL when running on UNIX. COnverted everything to UPPERCASE. Tried lowercase, but hiberate generated names in uppercase.
