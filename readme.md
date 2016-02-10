@@ -32,9 +32,10 @@ This document is divided into **Installation and running** and **Notes on change
 
 * You can either edit and run the wildfly-commands.cli command line file found in dukes-forest/wildfly-commands.cli, you can can manually do each step below. 
 
-* Add `mysql jdbc driver` to Wildfly if you have not already done so. See [Migrating a Java EE App from GlassFish to WildFly ](http://wildfly.org/news/2014/02/06/GlassFish-to-WildFly-migration/) and [DataSource configuration](https://docs.jboss.org/author/display/WFLY9/DataSource+configuration) for specific details.
+* Add `XA` mysql jdbc driver to Wildfly if you have not already done so. See [Example MySQL XA Datasource](https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/6/html/Administration_and_Configuration_Guide/Example_MySQL_XA_Datasource1.html) for example.
 
-* Add a datasource to wildfly.  Set the jndi-name `java:jboss/ForestDataSource` and poolname `ForestDataSource`. This can be done through the management console, or by copying and pasting the XML snippent shown below. Be sure the datasource is enabled and you can sucessfully test the connection from the wildfly management console.
+* Add a `XA` datasource and driver to wildfly.  Set the jndi-name `java:jboss/ForestXADS` and name `ForestXADS`. This can be done through the management console, or by copying and pasting the XML snippet shown in the notes below. Be sure the datasource is enabled and you can sucessfully test the connection from the wildfly management 
+console.
 
 * Add a message queue wildfly named OrderQueue, as per specs below.
 
@@ -48,7 +49,7 @@ This document is divided into **Installation and running** and **Notes on change
         <security-domain name="dukes-forest" cache-type="default">
             <authentication>
                 <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
-                    <module-option name="dsJndiName" value="java:jboss/ForestDataSource"/>
+                    <module-option name="dsJndiName" value="java:jboss/ForestXADS"/>
                     <module-option name="rolesQuery" value="select NAME as 'ROLES', 'Roles' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?"/>
                     <module-option name="hashAlgorithm" value="MD5"/>
                     <module-option name="hashEncoding" value="HEX"/>
@@ -57,7 +58,7 @@ This document is divided into **Installation and running** and **Notes on change
             </authentication>
             <authorization>
                 <policy-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
-                    <module-option name="dsJndiName" value="java:jboss/ForestDataSource"/>
+                    <module-option name="dsJndiName" value="java:jboss/ForestXADS"/>
                     <module-option name="rolesQuery" value="select NAME as 'ROLE', 'ROLES' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?"/>
                     <module-option name="hashAlgorithm" value="MD5"/>
                     <module-option name="hashEncoding" value="HEX"/>
@@ -73,7 +74,7 @@ This document is divided into **Installation and running** and **Notes on change
 * Run `mvn install` from the dukes-forest directory, so that the jars will be put into your repository.
 
 * Deploy dukes-payment, dukes-shipment, and dukes-store to wildfly.
-  **There was an issue here.** See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). There was also a problem because both the dukes-shipment.war and the dukes-store.war have the entities.jar in them. The entities.jar has the persistence.xml file, which was configurated to tell the server to create the database and load the default data. That means it was done twice, which was problematic. The issue doesn't apply because the created the schema was created and loaded manually as per the database procedures above. 
+  **There was an issue here.** See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). Since dukes-forest has its entities in the entities.jar, the database create scripts would not get executed if you deployed from maven or copied the .war files manually. Only `Run on Server` from Eclipse worked. There was also a problem because both the dukes-shipment.war and the dukes-store.war have the entities.jar in them. The entities.jar has the persistence.xml file, which was configurated to tell the server to create the database and load the default data. That means it was done twice, which was problematic. The issue doesn't apply because the created the schema was created and loaded manually as per the database procedures above. 
   
 * Open http://localhost:8080/dukes-store to run dukes-store. You will need the built-in administrator account to login to dukes-shipment, which is username=admin@example.com and password=1234.
 
@@ -96,23 +97,34 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
   various var-char fields. Also, there was an issue with a Foreign Key Index on the Product table being
   named the same as the Foreign Key.    
   
-* Changed entities/src/main/resources/META-INF/persistence.xml to use java:jboss/ForestDataSource instead of
-  java:global/ForestDataSource. Created the appropriate datasource in Wildfly.
+* Changed entities/src/main/resources/META-INF/persistence.xml to use java:jboss/ForestXADS instead of
+  java:global/ForestXADS. 
   
-        <datasource jta="true" jndi-name="java:jboss/ForestDataSource" pool-name="ForestDataSource" enabled="true" use-ccm="true">
-            <connection-url>jdbc:mysql://localhost:3306/forest</connection-url>
-            <driver-class>com.mysql.jdbc.Driver</driver-class>
-            <driver>mysql</driver>
-            <security>
-                <user-name>username</user-name>
-                <password>password</password>
-            </security>
-            <validation>
-                <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"/>
-                <background-validation>true</background-validation>
-                <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"/>
-                </validation>
-        </datasource>
+* Added java:jboss/ForestXADS datasource and mysql driver in standalone-full.xml. 
+  
+        <datasources>
+           <xa-datasource jndi-name="java:jboss/ForestXADS" pool-name="ForestXADS" enabled="true">
+           <driver>com.mysql</driver>
+           <xa-datasource-property name="URL">jdbc:mysql://localhost:3306/forest</xa-datasource-property>
+           <security>
+             <user-name>forest</user-name>
+             <password>forest</password>
+           </security>
+         </xa-datasource>
+         <drivers>
+           <driver name="mysql" module="com.mysql">
+             <datasource-class>com.mysql.jdbc.Driver</datasource-class>
+             <xa-datasource-class>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</xa-datasource-class>
+           </driver>
+         </drivers>
+       </datasources>
+       
+  and ...
+  
+        <driver name="mysql" module="com.mysql">
+            <xa-datasource-class>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</xa-datasource-class>
+        </driver>
+  
     
 * Created appropriate queue in Wildfly and made Eclipse run Wildfly with standalone-full.xml
   so that JMS services would be available.
@@ -147,7 +159,7 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
         <security-domain name="dukes-forest" cache-type="default">
             <authentication>
                 <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
-                    <module-option name="dsJndiName" value="java:jboss/ForestDataSource"/>
+                    <module-option name="dsJndiName" value="java:jboss/ForestXADS"/>
                     <module-option name="rolesQuery" value="select NAME as 'ROLES', 'Roles' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?"/>
                     <module-option name="hashAlgorithm" value="MD5"/>
                     <module-option name="hashEncoding" value="HEX"/>
@@ -156,7 +168,7 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
             </authentication>
             <authorization>
                 <policy-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
-                    <module-option name="dsJndiName" value="java:jboss/ForestDataSource"/>
+                    <module-option name="dsJndiName" value="java:jboss/ForestXADS"/>
                     <module-option name="rolesQuery" value="select NAME as 'ROLE', 'ROLES' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?"/>
                     <module-option name="hashAlgorithm" value="MD5"/>
                     <module-option name="hashEncoding" value="HEX"/>
@@ -165,31 +177,6 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
             </authorization>
         </security-domain>
 
-* Added java:jboss/ForestDataSource datasource and mysql driver in standalone-full.xml.
-
-        <datasource jta="true" jndi-name="java:jboss/ForestDataSource" pool-name="ForestDataSource" enabled="true" use-ccm="true">
-            <connection-url>jdbc:mysql://localhost:3306/forest</connection-url>
-            <driver-class>com.mysql.jdbc.Driver</driver-class>
-            <driver>mysql</driver>
-            <security>
-                <user-name>username</user-name>
-                <password>password</password>
-            </security>
-            <validation>
-                <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"/>
-                <background-validation>true</background-validation>
-                <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"/>
-            </validation>
-        </datasource>
-  
-  and ..
-  
-        <driver name="mysql" module="com.mysql">
-            <xa-datasource-class>
-                com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
-            </xa-datasource-class>
-        </driver>
-  
 * Changed /src/main/java/webapp/WEB-INF/web.xml for dukes-shipment and dukes-shop projects 
   to use dukes-forest security domain for login.
   

@@ -1,13 +1,13 @@
-# These commands will configure wildfly/jboss for dukes-forest
-# First, add a mysql driver module into 
+# These commands will configure wildfly 9 for dukes-forest
 
-module add --name=com.mysql --resources=~/mysql-connector-java-5.1.38/mysql-connector-java-5.1.38-bin.jar --dependencies=javax.api,javax.transaction.api
+# First, add a mysql driver module into the wildfly server 
+module add --name=com.mysql --resources=C:\Progra~2\MySQL\CONNEC~1.31\mysql-connector-java-5.1.31-bin.jar --dependencies=javax.api,javax.transaction.api
 
 # create a mysql driver 
-/subsystem=datasources/jdbc-driver=mysql:add(driver-name="mysql",driver-module-name="com.mysql",driver-class-name=com.mysql.jdbc.Driver)
+/subsystem=datasources/jdbc-driver=mysql:add(driver-name="mysql",driver-module-name="com.mysql",driver-class-name=com.mysql.jdbc.Driver,driver-xa-datasource-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource)
 
 # create a ForestDataSource
-data-source add --jndi-name=java:jboss/ForestDataSource --name=ForestDataSource --connection-url=jdbc:mysql://localhost:3306/forest --driver-name=mysql --user-name=forest --password=forest
+xa-data-source add --name=ForestXADS --driver-name=mysql --jndi-name=java:jboss/ForestXADS --user-name=forest --password=forest --xa-datasource-properties=[{URL=jdbc:mysql://localhost:3306/forest}]
 
 # Add a JMS OrderQueue
 jms-queue add --queue-address=OrderQueue --entries=java:global/jms/queue/OrderQueue
@@ -18,7 +18,7 @@ jms-queue add --queue-address=OrderQueue --entries=java:global/jms/queue/OrderQu
     "code"="org.jboss.security.auth.spi.DatabaseServerLoginModule", \
     "flag"="required", \
     "module-options"=[ \
-        dsJndiName=>"java:/jboss/ForestDataSource", \
+        dsJndiName=>"java:/jboss/ForestXADS", \
         principalsQuery=>"select PASSWORD from forest.PERSON where EMAIL=?", \
         rolesQuery=>"select NAME as 'ROLES', 'Roles' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?", \
         hashAlgorithm=>"MD5", \
@@ -29,9 +29,11 @@ jms-queue add --queue-address=OrderQueue --entries=java:global/jms/queue/OrderQu
     "code"="org.jboss.security.auth.spi.DatabaseServerLoginModule", \
     "flag"="required", \
     "module-options"=[ \
-        dsJndiName=>"java:/jboss/ForestDataSource", \
+        dsJndiName=>"java:/jboss/ForestXADS", \
         principalsQuery=>"select PASSWORD from forest.PERSON where EMAIL=?", \
         rolesQuery=>"select NAME as 'ROLES', 'Roles' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?", \
         hashAlgorithm=>"MD5", \
         hashEncoding=>"HEX", \
     ] }]  )
+
+reload
