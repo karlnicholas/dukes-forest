@@ -38,7 +38,7 @@ This document is divided into **Installation and running** and **Notes on change
 * Add a datasource to wildfly.  Set the jndi-name `java:jboss/ForestDataSource` and poolname `ForestDataSource`. This can be done through the management console, or by copying and pasting the XML snippent shown below. Be sure the datasource is enabled and you can sucessfully test the connection from the wildfly management console.
 
 * Add a message queue wildfly named OrderQueue, as per specs below.
- 
+
     <jms-queue name="OrderQueue">
         <entry name="java:global/jms/queue/OrderQueue"/>
         <durable>true</durable>
@@ -113,7 +113,7 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
     
 * Created appropriate queue in Wildfly and made Eclipse run Wildfly with standalone-full.xml
   so that JMS services would be available.
-  
+    
     <jms-queue name="OrderQueue">
         <entry name="java:global/jms/queue/OrderQueue"/>
         <durable>true</durable>
