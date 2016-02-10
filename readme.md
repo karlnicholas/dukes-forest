@@ -10,13 +10,13 @@ Please find the Oracle dukes-forest tutorial documentation at [Duke's Forest Cas
 
 This document is divided into **Installation and running** and **Notes on changes to the original source**
 
-# Installation and running procedures.
+#### Installation and running procedures.
 
 * Date 02/2106
 
 * Clone git repository.
 
-### Database procedures.
+##### Database procedures.
 
 * Create a schema in MySQL named `forest` in lowercase. I used the workbench.
 
@@ -26,7 +26,7 @@ This document is divided into **Installation and running** and **Notes on change
 
 * Load the default data. The load.sql script is in entities/src/main/resources/META-INF/sql/load.sql.
 
-### Wildfly procedures.
+##### Wildfly procedures.
 
 * Run `mvn clean verify` from the dukes-forest directory. This will build 3 jar files and 3 war files, `events.jar`, `entities.jar`, `dukes-resources.jar`, and `dukes-payment.war`, `dukes-shipment.war`, and `dukes-store.war`, in that order.
 
@@ -68,7 +68,7 @@ This document is divided into **Installation and running** and **Notes on change
         </security-domain>
   
 * Deploy dukes-payment, dukes-shipment, and dukes-store to wildfly.
-  ** Issue here ** Figuring out work around. See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). The issue doesn't apply because you have already created the schema and loaded the data by hand as per the database procedures above. 
+  ** There was an issue here. ** See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). There was also a problem because both the dukes-shipment.war and the dukes-store.war have the entities.jar in them. The entities.jar has the persistence.xml file, which was configurated to tell the server to create the database and load the default data. That means it was done twice, which was problematic. The issue doesn't apply because the created the schema was created and loaded manually as per the database procedures above. 
 
   
 * Open http://localhost:8080/dukes-store to run dukes-store. You will need the built-in administrator account to login to dukes-shipment, which is username=admin@example.com and password=1234.
