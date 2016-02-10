@@ -39,10 +39,10 @@ This document is divided into **Installation and running** and **Notes on change
 
 * Add a message queue wildfly named OrderQueue, as per specs below.
 
-    <jms-queue name="OrderQueue">
-        <entry name="java:global/jms/queue/OrderQueue"/>
-        <durable>true</durable>
-    </jms-queue>
+        <jms-queue name="OrderQueue">
+            <entry name="java:global/jms/queue/OrderQueue"/>
+            <durable>true</durable>
+        </jms-queue>
 
 * Add a security-domain to wildfly named dukes-forest, as per specs below. Note that on unix systems the queries are case sensitive.
 
@@ -96,28 +96,28 @@ Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
 * Changed entities/src/main/resources/META-INF/persistence.xml to use java:jboss/ForestDataSource instead of
   java:global/ForestDataSource. Created the appropriate datasource in Wildfly.
   
-    <datasource jta="true" jndi-name="java:jboss/ForestDataSource" pool-name="ForestDataSource" enabled="true" use-ccm="true">
-        <connection-url>jdbc:mysql://localhost:3306/forest</connection-url>
-        <driver-class>com.mysql.jdbc.Driver</driver-class>
-        <driver>mysql</driver>
-        <security>
-        <user-name>username</user-name>
-        <password>password</password>
-        </security>
-        <validation>
-        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"/>
-        <background-validation>true</background-validation>
-        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"/>
-        </validation>
-    </datasource>
+        <datasource jta="true" jndi-name="java:jboss/ForestDataSource" pool-name="ForestDataSource" enabled="true" use-ccm="true">
+            <connection-url>jdbc:mysql://localhost:3306/forest</connection-url>
+            <driver-class>com.mysql.jdbc.Driver</driver-class>
+            <driver>mysql</driver>
+            <security>
+                <user-name>username</user-name>
+                <password>password</password>
+            </security>
+            <validation>
+                <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"/>
+                <background-validation>true</background-validation>
+                <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"/>
+                </validation>
+        </datasource>
     
 * Created appropriate queue in Wildfly and made Eclipse run Wildfly with standalone-full.xml
   so that JMS services would be available.
     
-    <jms-queue name="OrderQueue">
-        <entry name="java:global/jms/queue/OrderQueue"/>
-        <durable>true</durable>
-    </jms-queue>
+        <jms-queue name="OrderQueue">
+            <entry name="java:global/jms/queue/OrderQueue"/>
+            <durable>true</durable>
+        </jms-queue>
 
 * Changed dukes-shipment/src/main/java/com.forest.shipment.ejb.OrderBrowser to use jboss compatible jndi name 
   for jms message queue. 
