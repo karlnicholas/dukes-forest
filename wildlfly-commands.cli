@@ -1,0 +1,37 @@
+# These commands will configure wildfly/jboss for dukes-forest
+# First, add a mysql driver module into 
+
+module add --name=com.mysql --resources=~/mysql-connector-java-5.1.38/mysql-connector-java-5.1.38-bin.jar --dependencies=javax.api,javax.transaction.api
+
+# create a mysql driver 
+/subsystem=datasources/jdbc-driver=mysql:add(driver-name="mysql",driver-module-name="com.mysql",driver-class-name=com.mysql.jdbc.Driver)
+
+# create a ForestDataSource
+data-source add --jndi-name=java:jboss/ForestDataSource --name=ForestDataSource --connection-url=jdbc:mysql://localhost:3306/forest --driver-name=mysql --user-name=forest --password=forest
+
+# Add a JMS OrderQueue
+jms-queue add --queue-address=OrderQueue --entries=java:global/jms/queue/OrderQueue
+
+# Create a dukes-forest security-domain
+/subsystem=security/security-domain=dukes-forest:add(cache-type="default")
+/subsystem=security/security-domain=dukes-forest/authentication=classic:add(login-modules=[{ \
+    "code"="org.jboss.security.auth.spi.DatabaseServerLoginModule", \
+    "flag"="required", \
+    "module-options"=[ \
+        dsJndiName=>"java:/jboss/ForestDataSource", \
+        principalsQuery=>"select PASSWORD from forest.PERSON where EMAIL=?", \
+        rolesQuery=>"select NAME as 'ROLES', 'Roles' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?", \
+        hashAlgorithm=>"MD5", \
+        hashEncoding=>"HEX", \
+    ] }]  )
+
+/subsystem=security/security-domain=dukes-forest/authorization=classic:add(policy-modules=[{ \
+    "code"="org.jboss.security.auth.spi.DatabaseServerLoginModule", \
+    "flag"="required", \
+    "module-options"=[ \
+        dsJndiName=>"java:/jboss/ForestDataSource", \
+        principalsQuery=>"select PASSWORD from forest.PERSON where EMAIL=?", \
+        rolesQuery=>"select NAME as 'ROLES', 'Roles' as 'ROLEGROUP' from forest.GROUPS g inner join forest.PERSON_GROUPS pg on g.ID = pg.GROUPS_ID join forest.PERSON p on p.EMAIL = pg.EMAIL where p.EMAIL = ?", \
+        hashAlgorithm=>"MD5", \
+        hashEncoding=>"HEX", \
+    ] }]  )

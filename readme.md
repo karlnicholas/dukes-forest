@@ -14,7 +14,7 @@ This document is divided into **Installation and running** and **Notes on change
 
 * Date 02/2106
 
-* Clone git repository.
+* Clone git repository `git clone https://github.com/karlnicholas/dukes-forest.git`.
 
 ##### Database procedures.
 
@@ -22,16 +22,15 @@ This document is divided into **Installation and running** and **Notes on change
 
 * Create the database user and password in your `MySQL` server. Give this user full privileges to the `forest` schema. This username and password will need to be added to your `Forest` datasource.
 
-* Create the schema. There is an issue with having JPA auto create the schema and load the data. It works, but it works for both dukes-shipment and dukes-store. The create sql script won't create the database twice, but the load sql script will load twice, so let's just do it by hand because I have commented out the create and load properties in the entities persistence.xml file. The create.sql script is in entities/src/main/resources/META-INF/sql/create.sql.
+* Create the schema. There is an issue with having JPA auto create the schema and load the data. It works, but it works for both dukes-shipment and dukes-store. The create sql script won't create the database twice, but the load sql script will load twice, so let's just do it by hand because I have commented out the create and load properties in the entities persistence.xml file. The create.sql script is in `entities/src/main/resources/META-INF/sql/create.sql`.
 
-* Load the default data. The load.sql script is in entities/src/main/resources/META-INF/sql/load.sql.
+* Load the default data. The load data.sql script is in `entities/src/main/resources/META-INF/sql/data.sql`.
 
 ##### Wildfly procedures.
 
-* Run `mvn clean verify` from the dukes-forest directory. This will build 3 jar files and 3 war files, `events.jar`, `entities.jar`, `dukes-resources.jar`, and `dukes-payment.war`, `dukes-shipment.war`, and `dukes-store.war`, in that order.
+* Pick a Wildfly configuration file to work with: **Be sure you are running the `standalone-full` version.**, or at least have JMS messaging enabled ( I used the standalone-full.xml, I don't know the exact configuration needed, but standalone-full.xml worked).
 
-
-* Pick a Wildfly configuration file to work with: **Be sure you are running the `standalone-full` version.**, or at least you have enabled JMS messaging ( I used the standalone-full.xml, I don't know the exact configuration needed, but standalone-full.xml worked).
+* You can either edit and run the wildfly-commands.cli command line file found in dukes-forest/wildfly-commands.cli, you can can manually do each step below. 
 
 * Add `mysql jdbc driver` to Wildfly if you have not already done so. See [Migrating a Java EE App from GlassFish to WildFly ](http://wildfly.org/news/2014/02/06/GlassFish-to-WildFly-migration/) and [DataSource configuration](https://docs.jboss.org/author/display/WFLY9/DataSource+configuration) for specific details.
 
@@ -66,17 +65,21 @@ This document is divided into **Installation and running** and **Notes on change
                 </policy-module>
             </authorization>
         </security-domain>
-  
-* Deploy dukes-payment, dukes-shipment, and dukes-store to wildfly.
-  ** There was an issue here. ** See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). There was also a problem because both the dukes-shipment.war and the dukes-store.war have the entities.jar in them. The entities.jar has the persistence.xml file, which was configurated to tell the server to create the database and load the default data. That means it was done twice, which was problematic. The issue doesn't apply because the created the schema was created and loaded manually as per the database procedures above. 
 
+##### dukes-forest steps.
+  
+* Run `mvn clean verify` from the dukes-forest directory. This will build 3 jar files and 3 war files, `events.jar`, `entities.jar`, `dukes-resources.jar`, and `dukes-payment.war`, `dukes-shipment.war`, and `dukes-store.war`, in that order.
+
+* Run `mvn install` from the dukes-forest directory, so that the jars will be put into your repository.
+
+* Deploy dukes-payment, dukes-shipment, and dukes-store to wildfly.
+  **There was an issue here.** See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). There was also a problem because both the dukes-shipment.war and the dukes-store.war have the entities.jar in them. The entities.jar has the persistence.xml file, which was configurated to tell the server to create the database and load the default data. That means it was done twice, which was problematic. The issue doesn't apply because the created the schema was created and loaded manually as per the database procedures above. 
   
 * Open http://localhost:8080/dukes-store to run dukes-store. You will need the built-in administrator account to login to dukes-shipment, which is username=admin@example.com and password=1234.
 
 * Refer to the [Duke's Forest Case Study Example](https://docs.oracle.com/javaee/7/tutorial/dukes-forest.htm#GLNPW) tutorial for further information on using the example.
 
-
-# notes of porting to Wildfly 9.
+# Notes on changes to original source for porting to Wildfly 9.
 
 Port of Dukes-Forest tutorial to Wildfly 9 and MySql 5.6.
 
