@@ -36,4 +36,5 @@ jms-queue add --queue-address=OrderQueue --entries=java:global/jms/queue/OrderQu
         hashEncoding=>"HEX", \
     ] }]  )
 
+# reload the server
 reload

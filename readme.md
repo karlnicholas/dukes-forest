@@ -32,10 +32,35 @@ This document is divided into **Installation and running** and **Notes on change
 
 * You can either edit and run the wildfly-commands.cli command line file found in dukes-forest/wildfly-commands.cli, you can can manually do each step below. 
 
-* Add `XA` mysql jdbc driver to Wildfly if you have not already done so. See [Example MySQL XA Datasource](https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/6/html/Administration_and_Configuration_Guide/Example_MySQL_XA_Datasource1.html) for example.
+* Add `XA` mysql jdbc driver module to Wildfly if you have not already done so. See [Example MySQL XA Datasource](https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/6/html/Administration_and_Configuration_Guide/Example_MySQL_XA_Datasource1.html) for example.
 
-* Add a `XA` datasource and driver to wildfly.  Set the jndi-name `java:jboss/ForestXADS` and name `ForestXADS`. This can be done through the management console, or by copying and pasting the XML snippet shown in the notes below. Be sure the datasource is enabled and you can sucessfully test the connection from the wildfly management 
+* Add a `XA` datasource and driver to wildfly.  See [Example MySQL XA Datasource](https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/6/html/Administration_and_Configuration_Guide/Example_MySQL_XA_Datasource1.html) for example. Set the jndi-name `java:jboss/ForestXADS` and name `ForestXADS`. This can be done through the management console, or by copying and pasting the XML snippet shown in the notes below. Be sure the datasource is enabled and you can sucessfully test the connection from the wildfly management 
 console.
+
+        <datasources>
+           <xa-datasource jndi-name="java:jboss/ForestXADS" pool-name="ForestXADS" enabled="true">
+           <driver>com.mysql</driver>
+           <xa-datasource-property name="URL">jdbc:mysql://localhost:3306/forest</xa-datasource-property>
+           <security>
+             <user-name>forest</user-name>
+             <password>forest</password>
+           </security>
+         </xa-datasource>
+         <drivers>
+           <driver name="mysql" module="com.mysql">
+             <datasource-class>com.mysql.jdbc.Driver</datasource-class>
+             <xa-datasource-class>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</xa-datasource-class>
+           </driver>
+         </drivers>
+       </datasources>
+       
+  and ...
+  
+        <driver name="mysql" module="com.mysql">
+            <xa-datasource-class>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</xa-datasource-class>
+        </driver>
+  
+
 
 * Add a message queue wildfly named OrderQueue, as per specs below.
 
@@ -73,10 +98,12 @@ console.
 
 * Run `mvn install` from the dukes-forest directory, so that the jars will be put into your repository.
 
-* Deploy dukes-payment, dukes-shipment, and dukes-store to wildfly.
+* Deploy dukes-payment, dukes-shipment, and dukes-store to wildfly. This can be done by running 
+`mvn wildfly:deploy` from each subdirectory, or by copying the .war files
+to the wildfly-9.0.2.Final/standalone/deployments directory, or by using Eclipse `Run->Run on Server`.
   **There was an issue here.** See [Schema not generated if Entities and Persistence.xml in another jar](https://issues.jboss.org/browse/WFLY-6151). Since dukes-forest has its entities in the entities.jar, the database create scripts would not get executed if you deployed from maven or copied the .war files manually. Only `Run on Server` from Eclipse worked. There was also a problem because both the dukes-shipment.war and the dukes-store.war have the entities.jar in them. The entities.jar has the persistence.xml file, which was configurated to tell the server to create the database and load the default data. That means it was done twice, which was problematic. The issue doesn't apply because the created the schema was created and loaded manually as per the database procedures above. 
   
-* Open http://localhost:8080/dukes-store to run dukes-store. You will need the built-in administrator account to login to dukes-shipment, which is username=admin@example.com and password=1234.
+* Open `http://localhost:8080/dukes-store` to run dukes-store. You will need the built-in administrator account to login to dukes-shipment, which is username=admin@example.com and password=1234.
 
 * Refer to the [Duke's Forest Case Study Example](https://docs.oracle.com/javaee/7/tutorial/dukes-forest.htm#GLNPW) tutorial for further information on using the example.
 
